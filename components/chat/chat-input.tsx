@@ -3,7 +3,7 @@ import { IconBrandTelegram } from '@tabler/icons-react';
 import Suggestions from './suggestion/suggestions';
 
 export default function ChatInput() {
-    return <div className={`absolute bottom-10 w-[60%] left-1/2 -translate-x-1/2 group`}>
+    return <div className={`absolute bottom-10 w-8/12 max-sm:w-11/12 left-1/2 -translate-x-1/2 group`}>
         <Suggestions/>
         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
         </div>

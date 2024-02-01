@@ -25,7 +25,7 @@ export default function Suggestions() {
     return (
         <div className='grid grid-cols-2 max-md:grid-cols-1 gap-2 m-2 max-lg:[&>*:nth-child(3)]:hidden max-lg:[&>*:nth-child(4)]:hidden' >
             {sampleSuggestions.map(({ id, title, description }) => (
-                <div className='border rounded-xl p-2.5  hover:bg-slate-50 relative' key={id}>
+                <div className='border rounded-xl p-2.5 hover:bg-slate-50 relative' key={id}>
                     <h3>{title}</h3>
                     <small className='text-slate-400 truncate max-w-[90%] block'>{description}</small>
                     <SuggestionsSubmit />
