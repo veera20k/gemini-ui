@@ -8,7 +8,7 @@ import UserProfile from './user-profile'
 
 export default function Header({ isCollapsed }: { isCollapsed: boolean | undefined }) {
     return (
-        <div className="flex justify-between absolute top-0 bg-[rgba(255,255,255,0.5)] backdrop-blur-md rounded-md p-3 w-full border-b">
+        <div className="flex justify-between absolute top-0 bg-[rgba(255,255,255,0.5)] backdrop-blur-md rounded-md p-3 w-full">
             <div className='flex gap-2'>
                 {isCollapsed && <NewChat />}
                 <MdSideBar />
