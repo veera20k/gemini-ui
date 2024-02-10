@@ -4,6 +4,7 @@ import React from 'react'
 import MdSideBar from '../md-sidebar'
 import NewChat from './new-chat'
 import VersionSwitchSelect from './version-swtich-select'
+import { useSession } from 'next-auth/react'
 import UserProfile from './user-profile'
 
 export default function Header({ isCollapsed }: { isCollapsed: boolean | undefined }) {

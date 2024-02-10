@@ -1,17 +1,53 @@
 import { NextAuthOptions } from "next-auth";
-import GithubProvider from 'next-auth/providers/github';
-import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth from "next-auth"
+import connect from "./lib/mongo/client";
+import User from "./lib/mongo/models/User";
 
 export const authOptions: NextAuthOptions = {
-    secret: process.env.NEXTAUTH_SECRET,
     providers: [
-        GithubProvider({
-            clientId: process.env.GITHUB_APP_CLIENT_ID as string,
-            clientSecret: process.env.GITHUB_APP_CLIENT_SECRET as string,
-        }),
-        GoogleProvider({
-            clientId: process.env.AUTH_GOOGLE_ID as string,
-            clientSecret: process.env.AUTH_GOOGLE_SECRET as string
-        }),
-    ]
-};
+        CredentialsProvider({
+            name: "credentials",
+            credentials: {
+                username: { label: "Username", type: "text", placeholder: "Enter userName" },
+                password: { label: "Password", type: "password", placeholder: "Enter password" }
+            },
+            async authorize(credential) {
+                const userName = credential?.username;
+                await connect();
+                const user = await User.findOne({ userName });
+                if (user) {
+                    return user;
+                }
+                return null
+            },
+        })
+    ],
+    callbacks: {
+        async session({ session, token }) {
+            if (token._id && session?.user) {
+                session.user._id = token._id;
+                session.user.image = token.image;
+                session.user.userName = token.userName;
+                delete session.user.name;
+                delete session.user.email;
+              }
+            return session;
+        },
+        async jwt({ token }) {
+            if (!token._id && token.sub) {
+                await connect();
+                const user = await User.findOne({ _id: token.sub });
+                token._id = user._id;
+                token.image = user.image || 'https://robohash.org/stefan-one';
+                token.userName = user.userName;
+            }
+            return token;
+        }
+    },
+    session: {
+        strategy: "jwt"
+    },
+    secret: process.env.NEXTAUTH_SECRET
+}
+export const handler = NextAuth(authOptions)

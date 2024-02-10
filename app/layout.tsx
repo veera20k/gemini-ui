@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import localFont from 'next/font/local'
+import { Toaster } from "@/components/ui/sonner"
 import NextAuthProvider from "./next-auth-provider";
 
 const myFont = localFont({
@@ -24,7 +25,7 @@ export default function RootLayout({
         <NextAuthProvider>
           {children}
         </NextAuthProvider>
-        <div className="absolute top-0 z-[-2] h-screen w-screen bg-white bg-[radial-gradient(100%_50%_at_50%_0%,rgba(0,163,255,0.13)_0,rgba(0,163,255,0)_50%,rgba(0,163,255,0)_100%)]"></div>
+        <Toaster richColors />
       </body>
     </html>
   );
