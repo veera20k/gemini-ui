@@ -16,21 +16,19 @@ import {
 } from "@/components/ui/tooltip"
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import ChatInput from './chat-input';
-import logo from '../../public/images/logo.png'
-import Image from 'next/image';
 import SidebarContent from './sidebar-content';
 import Header from './header/header';
-import ChatContent from './chat-content';
 import useChatStore from '@/state/chatStore';
-import { getChat, getChatListMeta } from '@/server/actions/chat';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Conversation, Chat } from '@/types/chat';
 
-export default function ChatLayout({ defaultLayout = { sizes: [15, 85], IntlIsCollapsed: false } }: { defaultLayout: { sizes: number[], IntlIsCollapsed?: boolean } }) {
+interface ChatLayoutProps {
+    defaultLayout?: { sizes: number[], IntlIsCollapsed?: boolean },
+    children: React.ReactNode
+}
+
+export default function ChatLayout({ defaultLayout = { sizes: [15, 85], IntlIsCollapsed: false }, children }: ChatLayoutProps) {
     const sidebarRef = useRef<ImperativePanelHandle>(null);
     const [isCollapsed, setIsCollapsed] = React.useState(defaultLayout.IntlIsCollapsed);
-    const { getAllCurrentConvo, setChatMetaList, currentChatId, setCurrentChat } = useChatStore();
-    const searchParams = useSearchParams();
+    const { setChatMetaList } = useChatStore();
 
     const handleCollapse = () => {
         if (!sidebarRef?.current) return;
@@ -43,25 +41,13 @@ export default function ChatLayout({ defaultLayout = { sizes: [15, 85], IntlIsCo
     };
 
     const fetchChatMetaList = async () => {
-        const res = await getChatListMeta() || [];
-        setChatMetaList(res);
-    };
-
-    const getChatById = async (id: string) => {
-        const res: Chat | null = await getChat(id);
-        const conversations = new Map<string, Conversation>();
-        res?.conversations.forEach((c: Conversation) => {
-            conversations.set(c.tempId, c);
+        fetch(`/api/chat`, { method: 'GET' }).then((res) => res.json()).then((chats) => {
+            setChatMetaList(chats);
         });
-        setCurrentChat(conversations);
-    }
+    };
 
     useEffect(() => {
         fetchChatMetaList();
-        const query = searchParams?.get('c');
-        if (query) {
-            getChatById(query);
-        }
     }, []);
 
     return (
@@ -89,14 +75,8 @@ export default function ChatLayout({ defaultLayout = { sizes: [15, 85], IntlIsCo
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <ChatContent />
-                <div>
-                    {!getAllCurrentConvo().length && <div className='absolute left-1/2 top-[30%] -translate-x-1/2'>
-                        <Image src={logo} alt="logo" className='h-16 w-16 m-auto animate-pulse' priority />
-                        <h1 className='text-xl font-bold truncate'>How can i assist you today?</h1>
-                    </div>}
-                    <ChatInput />
-                </div>
+                {children}
+                <ChatInput />
             </ResizablePanel>
         </ResizablePanelGroup>
     )

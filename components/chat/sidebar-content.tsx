@@ -7,11 +7,11 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { IconDotsVertical, IconTrash, IconPencil } from '@tabler/icons-react';
-import { Input } from '../ui/input';
-import { deleteChat, renameChat } from '@/server/actions/chat';
+import { Input } from "@/components/ui/input"
+import Link from 'next/link';
 
 export default function SidebarContent() {
-    const { chatMetaList, currentChatId, setChatMetaList } = useChatStore();
+    const { chatMetaList, currentChatId, currentChat, setChatMetaList } = useChatStore();
     const [renameClickedIdx, setRenameClickedIdx] = React.useState<number | null>(null);
 
     function onRenameClick(index: number) {
@@ -19,7 +19,6 @@ export default function SidebarContent() {
     }
 
     function handleOnRenameBlur(event: React.FocusEvent<HTMLInputElement>, meta: { _id: string, name: string }) {
-        renameChat(meta._id, event?.target?.value || meta?.name);
         const updatedChatMetaList = chatMetaList?.map((chatMeta, i) => {
             if (i === renameClickedIdx) {
                 return { ...chatMeta, name: event?.target?.value || chatMeta?.name };
@@ -30,10 +29,19 @@ export default function SidebarContent() {
         setRenameClickedIdx(null);
     }
 
-    const handleDeleteChat = (_id: string) => {
-        deleteChat(_id);
-        const updatedChatMetaList = chatMetaList?.filter((chatMeta) => chatMeta._id !== _id) || [];
+    const handleDeleteChat = (id: string) => {
+        const updatedChatMetaList = chatMetaList?.filter((chatMeta) => chatMeta._id !== id) || [];
         setChatMetaList(updatedChatMetaList);
+        fetch(`/api/chat/${id}`, { method: "DELETE" });
+    }
+
+    const handleChatItemClick = (id: string) => {
+        if (id === currentChatId) {
+            return;
+        }
+        if (currentChat.size) {
+            currentChat.clear();
+        }
     }
 
     let content = <></>;
@@ -49,16 +57,18 @@ export default function SidebarContent() {
         content = <div className='pt-5'>
             {chatMetaList.map((meta, i) => {
                 return (
-                    <div className='hover:bg-slate-100 rounded-lg cursor-pointer group flex justify-between relative mt-1 p-1' key={meta._id}>
-                        {renameClickedIdx === i ?
-                            <FocusableInput
-                                defaultValue={meta.name}
-                                onBlur={(event) => handleOnRenameBlur(event, meta)}
-                            /> :
-                            <span className='p-2 truncate max-w-[90%]'>{meta.name}</span>
-                        }
-                        <EditPopover idx={i} onRenameClick={onRenameClick} onDelete={() => handleDeleteChat(meta._id)}>
-                            <IconDotsVertical height={15} width={15} className='group-hover:flex mr-1 hover:opacity-65 h-auto absolute right-2 bottom-4' />
+                    <div className='hover:bg-slate-100 rounded-lg cursor-pointer group flex justify-between relative mt-1' key={meta._id} >
+                        <Link href={`/chat/${meta._id}`} onClick={() => { handleChatItemClick(meta._id) }} className='truncate w-[90%] rounded-lg' >
+                            {renameClickedIdx === i ?
+                                <FocusableInput
+                                    defaultValue={meta.name}
+                                    onBlur={(event) => handleOnRenameBlur(event, meta)}
+                                /> :
+                                <span className='p-2 inline-block'>{meta.name}</span>
+                            }
+                        </Link>
+                        <EditPopover idx={i} onRenameClick={onRenameClick} onDelete={() => { handleDeleteChat(meta._id) }}>
+                            <IconDotsVertical height={30} width={30} className='group-hover:flex hover:opacity-65 p-1.5 absolute right-2 bottom-1' />
                         </EditPopover>
                     </div>
                 );
@@ -80,7 +90,8 @@ const FocusableInput = ({ defaultValue, onBlur }: { defaultValue: string, onBlur
             inputRef.current.focus();
         }
     }, []);
-    return <Input
+    return <Input 
+        type='text'
         className='border-none bg-transparent'
         defaultValue={defaultValue}
         onBlur={onBlur}
@@ -88,9 +99,10 @@ const FocusableInput = ({ defaultValue, onBlur }: { defaultValue: string, onBlur
     />;
 }
 
-function EditPopover({ children, onRenameClick, onDelete, idx }: { children: React.ReactNode, onRenameClick: (index: number) => void, onDelete: () => void, idx: number }) {
+function EditPopover({ children, onRenameClick, onDelete, idx }: { children: React.ReactNode, onRenameClick: (index: number) => void, onDelete: (event: React.MouseEvent<HTMLDivElement>) => void, idx: number }) {
     const [isOpen, setIsOpen] = React.useState(false);
-    const handleRenameClick = () => {
+    const handleRenameClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        event.stopPropagation();
         setIsOpen(false);
         onRenameClick(idx);
     }

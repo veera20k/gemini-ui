@@ -1,9 +1,18 @@
 import Image from 'next/image';
 import logo from '../../../public/images/logo.png'
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import useChatStore from '@/state/chatStore';
 
 function NewChat({ isSidebar }: { isSidebar?: boolean }) {
+    const router = useRouter();
+   const { resetChat } = useChatStore();
+    const handleNewChat = () => {
+        router.push('/chat/new');
+        resetChat();
+    }
     return (
-        <div className={`p-1.5 flex justify-between rounded-lg border hover:bg-slate-100 cursor-pointer`}>
+        <div onClick={handleNewChat} className={`p-1.5 flex justify-between rounded-lg border hover:bg-slate-100 cursor-pointer`}>
             {isSidebar && <div className='flex justify-center items-center'>
                 <Image src={logo} alt="logo" className='h-7 w-7 inline mr-2' priority />
                 <span className="font-semibold truncate">New chat</span>

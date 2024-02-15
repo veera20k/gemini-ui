@@ -28,6 +28,15 @@ const nextConfig = {
       }
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/chat/new',
+        permanent: true,
+      },
+    ]
+  },
 };
 
 export default nextConfig;

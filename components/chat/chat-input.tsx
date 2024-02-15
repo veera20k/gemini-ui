@@ -2,12 +2,14 @@ import React, { useRef, useState } from 'react';
 import { IconBrandTelegram } from '@tabler/icons-react';
 import Suggestions from './suggestion/suggestions';
 import useChatStore from '@/state/chatStore';
+import { useRouter } from 'next/navigation';
 
 export default function ChatInput() {
-    const { getAllCurrentConvo, textInputSubmit } = useChatStore();
+    const { getAllCurrentConvo, textInputSubmit, currentChatId } = useChatStore();
     const chatInputRef = useRef<HTMLTextAreaElement>(null);
     const [isDisabled, setDisabled] = useState(true);
-
+    const [messageHeight, setMessageHeight] = useState<string>('auto'); // Initial height
+    const router = useRouter()
     const onChange = () => {
         setDisabled(!chatInputRef.current?.value);
     };
@@ -16,18 +18,35 @@ export default function ChatInput() {
         e.preventDefault();
         const prompt = chatInputRef.current?.value;
         if (!prompt) return;
-        textInputSubmit(prompt);
+        textInputSubmit(prompt).then((val) => {
+            if (val.type === 'new') {
+                router.push(`/chat/${val.id}`);
+            }
+        });
+        chatInputRef.current.value = '';
     };
+
+    const autoGrow = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const element = event.target;
+        element.style.height = 'auto';
+        element.style.height = `${element.scrollHeight}px`;
+        if (element.scrollHeight <= 60) {
+            element.style.overflowY = 'hidden';
+        } else {
+            element.style.overflowY = 'auto';
+        }
+      };
 
     return (
         <form onSubmit={onSubmit}>
             <div className={`absolute bottom-5 w-8/12 max-sm:w-11/12 left-1/2 -translate-x-1/2 group`}>
-                {!getAllCurrentConvo().length && <Suggestions />}
+                {!getAllCurrentConvo().length && !currentChatId && <Suggestions />}
                 <textarea
-                    className={`block w-full px-3 py-4 text-md text-gray-900 outline-gray-300 border hover:outline-cyan-600 rounded-xl transition duration-300 ease-in-out resize-none overflow-y-auto max-h-[300px] `}
+                    className={`block w-full px-3 py-4 text-md text-gray-900 outline-gray-300 border hover:outline-cyan-600 rounded-xl transition duration-300 ease-in-out h-auto resize-none min-h-50 max-h-[200px]`}
                     placeholder="Message Gemini..."
                     required
                     rows={1}
+                    onInput={autoGrow}
                     ref={chatInputRef}
                     onChange={onChange}
                 />

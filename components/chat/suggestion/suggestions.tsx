@@ -8,6 +8,7 @@ import {
     TooltipArrow
 } from "@/components/ui/tooltip"
 import { IconSquareRoundedArrowUpFilled } from '@tabler/icons-react'
+import { useRouter } from 'next/navigation'
 
 interface Suggestion {
     id: number
@@ -37,10 +38,14 @@ const sampleSuggestions: Suggestion[] = [{
 
 export default function Suggestions() {
     const { textInputSubmit } = useChatStore();
-
+    const router = useRouter();
     const onSubmit = async (prompt: string) => {
         if (!prompt) return;
-        textInputSubmit(prompt);
+        textInputSubmit(prompt).then((val) => {
+            if (val.type === 'new') {
+                router.push(`/chat/${val.id}`);
+            }
+        });;
     };
 
     return (
