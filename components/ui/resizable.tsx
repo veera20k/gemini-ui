@@ -34,6 +34,8 @@ const ResizablePanel = React.forwardRef<
   )
 })
 
+ResizablePanel.displayName = ResizablePrimitive.Panel.displayName
+
 const ResizableHandle = ({
   withHandle,
   className,

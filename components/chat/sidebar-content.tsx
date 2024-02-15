@@ -10,7 +10,7 @@ import { IconDotsVertical, IconTrash, IconPencil } from '@tabler/icons-react';
 import { Input } from "@/components/ui/input"
 import Link from 'next/link';
 
-export default function SidebarContent() {
+export default function SidebarContent({ onSidebarItemClick }: {onSidebarItemClick?: () => void}) {
     const { chatMetaList, currentChatId, currentChat, setChatMetaList } = useChatStore();
     const [renameClickedIdx, setRenameClickedIdx] = React.useState<number | null>(null);
 
